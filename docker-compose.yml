@@ -1,0 +1,14 @@
+version: "3"
+services:
+  nodeserver:
+    image: depot.ami.usherbrooke.ca:4567/ift744/iot_beacon-ift744-2022a/nodeserver
+    ports:
+      - "8080:8080"
+  mongo:
+    image: mongo
+    restart: always
+    volume:
+      - ./mongo:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: beaconps
