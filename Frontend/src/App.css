@@ -40,3 +40,11 @@
 .clickable{
   cursor: pointer;
 }
+
+.bg{
+  height:calc(100vh - 50px);
+  background-image: url("./plan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
