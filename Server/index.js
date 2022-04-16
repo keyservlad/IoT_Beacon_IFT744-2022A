@@ -4,6 +4,7 @@ const PORT = 8080;
 app.use(express.json())
 
 
+
 const beacons = [{
 	name:"Raspberry Pi 1",
 	x:530,
@@ -14,28 +15,53 @@ const beacons = [{
 	y:650,
 }]
 
-const devices = {}
+const devices = []            
 
 const mapDistance = (rssi,measuredPower,n) => {
 	return 10**((measuredPower-rssi)/(10*n));
 }
 
-function getTrilateration2(position1, position2) {
+function getTrilateration2(beacon1, beacon2) {
+	const xa = beacon1.x
+	const ya = beacon1.y
+
+	const xb = beacon2.x
+	const yb = beacon2.y
+
+	const r1 = beacon1.d;
+	const r2 = beacon2.d;
+
+
+	const u = Math.sqrt((xb-xa)**2+(yb-ya)**2);
+
+	const xt = r1**2-r2**2+u**2;
+	const yt1 = Math.sqrt(r1**2-x1**2);
+	const yt2 = - yt1;
+
+
+	const x1 = xt(xb-xa)/u-yt1(yb-ya)/u+xa;
+	const y1 = xt(yb-ya)/u-yt1(xb-xa)/u+xa;
+
+	const x2 = xt(xb-xa)/u-yt2(yb-ya)/u+xa;
+	const y2 = xt(yb-ya)/u-yt2(xb-xa)/u+ya;
+	
+
+	return [{x:x1,y:y1},{x:x2,y:y2}];
 }
 
-function getTrilateration3(position1, position2, position3) {
-	let xa = position1.x
-	let ya = position1.y
+function getTrilateration3(beacon1, beacon2, beacon3) {
+	let xa = beacon1.x
+	let ya = beacon1.y
 
-	let xb = position2.x
-	let yb = position2.y
+	let xb = beacon2.x
+	let yb = beacon2.y
 
-	let xc = position3.x
-	let yc = position3.y
+	let xc = beacon3.x
+	let yc = beacon3.y
 
-	let ra = position1.d;
-	let rb = position2.d;
-	let rc = position3.d;
+	let ra = beacon1.d;
+	let rb = beacon2.d;
+	let rc = beacon3.d;
 
 	let S = (xc**2. - xb**2. + yc**2. - yb**2. + rb**2. - rc**2.)/ 2.0
 	let T = (xa**2. - xb**2. + ya**2. - yb**2. + rb**2. - ra**2.)/ 2.0
@@ -117,8 +143,13 @@ app.post('/handleDiscovery/',(req,res)=>{
 	res.sendStatus(200);
 })
 
+setInterval(()=>{
+
+}, 250);
+
 
 //Add interval to keep calculating devices' positions
 
-app.listen(PORT,()=>console.log(`Listening on http://localhost:${PORT}`))
 
+
+app.listen(PORT,()=>console.log(`Listening on http://localhost:${PORT}`))
