@@ -111,42 +111,44 @@ app.get('/getDevices',(req,res)=>{
 })
 
 
-
 app.post('/handleDiscovery/',(req,res)=>{
 	const body = req.body;
 
+	
 	const device = {
-		mac:"6a5s4d6a5s",
-		data:{},
+		addr:body.addr,
+		addrType:body.addrType,
+		scanData:body.scanData,
 	}
 	const beacon = {
-		mac:"pi1",
-		rssi:"-80",
-		pwr:"50",
-		moment:Date.now()
+		addr:body.beacon.addr,
+		rssi:body.rssi,
+		time:Date.now()
 	}
 
-	const deviceIdx = devices.findIndex(d=>d.mac=device.mac);
+	const deviceIdx = devices.findIndex(d=>d.addr===device.addr);
 	if(deviceIdx===-1){
 		let insert=device;
 		insert.beacons=[beacon];
 		devices.push(insert)
-	} else {
-		const beaconIdx = devices[deviceIdx].beacons.findIndex(b=>b.mac===beacon.mac);
+	} 
+	else {
+		const beaconIdx = devices[deviceIdx].beacons.findIndex(b=>b.addr===beacon.addr);
 		if(beaconIdx===-1){
 			devices[deviceIdx].beacons.push(beacon)
 		} else {
 			devices[deviceIdx].beacons[beaconIdx] = beacon;
 		}
 	}
-
-	console.log(body);
+	
 	res.sendStatus(200);
 })
 
 setInterval(()=>{
+	console.log("==============================")
+	console.log(JSON.stringify(devices,null,2))
+}, 1000);
 
-}, 250);
 
 //Add interval to keep calculating devices' positions
 
