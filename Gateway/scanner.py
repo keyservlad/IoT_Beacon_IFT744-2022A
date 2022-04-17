@@ -4,9 +4,9 @@ from bluepy.btle import Scanner, DefaultDelegate
 from pprint import pprint
 
 SERVER_URL = "http://192.168.43.73:8080/handleDiscovery/"
-PI_MAC = "e4:5f:01:1a:81:67"
-PI_X = 1000
-PI_Y = 100
+PI_MAC = "dca6324dc474"
+PI_X = 400
+PI_Y = 600
 
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
@@ -25,7 +25,6 @@ class ScanDelegate(DefaultDelegate):
                 "addr":PI_MAC,
                 "x":PI_X,
                 "y":PI_Y
-
             },
             "scanData":scanData
         }

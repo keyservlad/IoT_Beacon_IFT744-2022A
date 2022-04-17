@@ -1,15 +1,17 @@
+import axios from "axios";
+
 const beacons = [{
-    name:"Raspberry Pi 1",
-    x:530,
-    y:362,
+    addr:"Raspberry Pi 1",
+    x:800,
+    y:600,
 },{
-    name:"Raspberry Pi 2",
-    x:480,
-    y:650,
+    addr:"Raspberry Pi 2",
+    x:1600,
+    y:600,
 }]
 
 const devices = [{
-    mac:"5d465as4d6",
+    addr:"5d465as4d6",
     positions:[{
         x:200,
         y:400,
@@ -18,13 +20,13 @@ const devices = [{
         y:440,
     }]
 }, {
-    mac: "5d465as4t8",
+    addr: "5d465as4t8",
     positions:[{
         x: 300,
         y: 300,
     }]
 },{
-    mac:"5fds46s4t8",
+    addr:"5fds46s4t8",
     positions:[{
         x:800,
         y:700
@@ -33,9 +35,9 @@ const devices = [{
 
 
 export const getBeacons = () => {
-    return beacons;
+    return axios.get("http://localhost:8080/getBeacons").then(res=>res.data)
 }
 
 export const getDevices = () => {
-    return devices;
+    return axios.get("http://localhost:8080/getDevices").then(res=>res.data)
 }
