@@ -1,27 +1,26 @@
 const express = require("express");
+const cors = require('cors');
 const app = express();
 const PORT = 8080;
 app.use(express.json())
+app.use(cors())
 
+const MEASURED_POWER = -55;
 
+const beacons = []
 
-const beacons = [{
-	name:"Raspberry Pi 1",
-	x:530,
-	y:362,
-},{
-	name:"Raspberry Pi 2",
-	x:480,
-	y:650,
-}]
-
-const devices = []            
+let devices = []            
 
 const mapDistance = (rssi,measuredPower,n) => {
-	return 10**((measuredPower-rssi)/(10*n));
+	//Multiply by 100 to get distance in cm	
+	return 100*10**((measuredPower-rssi)/(10*n));
 }
 
 function getTrilateration2(beacon1, beacon2) {
+	
+	//console.log("===============================================")
+	//console.log(beacon1)
+	//console.log(beacon2)
 	const xa = beacon1.x
 	const ya = beacon1.y
 
@@ -34,16 +33,18 @@ function getTrilateration2(beacon1, beacon2) {
 
 	const u = Math.sqrt((xb-xa)**2+(yb-ya)**2);
 
-	const xt = r1**2-r2**2+u**2;
-	const yt1 = Math.sqrt(r1**2-x1**2);
+	if(r1+r2<u) return [];
+
+	const xt = (r1**2-r2**2+u**2)/(u*2);
+	const yt1 = Math.sqrt(r1**2-xt**2);
 	const yt2 = - yt1;
 
 
-	const x1 = xt(xb-xa)/u-yt1(yb-ya)/u+xa;
-	const y1 = xt(yb-ya)/u-yt1(xb-xa)/u+xa;
+	const x1 = xt*(xb-xa)/u-yt1*(yb-ya)/u+xa;
+	const y1 = xt*(yb-ya)/u-yt1*(xb-xa)/u+xa;
 
-	const x2 = xt(xb-xa)/u-yt2(yb-ya)/u+xa;
-	const y2 = xt(yb-ya)/u-yt2(xb-xa)/u+ya;
+	const x2 = xt*(xb-xa)/u-yt2*(yb-ya)/u+xa;
+	const y2 = xt*(yb-ya)/u-yt2*(xb-xa)/u+ya;
 	
 
 	return [{x:x1,y:y1},{x:x2,y:y2}];
@@ -115,15 +116,28 @@ app.post('/handleDiscovery/',(req,res)=>{
 	const body = req.body;
 
 	
+	const bcnIdx = beacons.findIndex(b=>b.addr===body.beacon.addr);	
+	if(bcnIdx===-1){
+		beacons.push({
+			addr:body.beacon.addr,
+        	        x:body.beacon.x,
+	                y:body.beacon.y
+		})
+	}
+
+
 	const device = {
 		addr:body.addr,
 		addrType:body.addrType,
 		scanData:body.scanData,
+		positions:[]
 	}
 	const beacon = {
 		addr:body.beacon.addr,
 		rssi:body.rssi,
-		time:Date.now()
+		time:Date.now(),
+		x:body.beacon.x,
+		y:body.beacon.y
 	}
 
 	const deviceIdx = devices.findIndex(d=>d.addr===device.addr);
@@ -145,9 +159,39 @@ app.post('/handleDiscovery/',(req,res)=>{
 })
 
 setInterval(()=>{
-	console.log("==============================")
-	console.log(JSON.stringify(devices,null,2))
-}, 1000);
+	//console.log("==============================")
+
+	//Calculate distance from RSSI
+	devices = devices.map(device=>({
+		...device,
+		beacons:device.beacons.map(b=>({
+			...b,
+			d:mapDistance(b.rssi,MEASURED_POWER,3)
+		}))
+	}))
+
+	//Calculate the device position 
+	devices = devices.map(device=>{
+
+		//Sort By distance
+		device.beacons.sort((a,b)=>a.d-b.d);
+
+		let positions = []
+		if(device.beacons.length===2){
+			positions = getTrilateration2(device.beacons[0],device.beacons[1])
+		}
+		else if (device.beacons.length>2){
+			positions = [getTrilateration3(device.beacons[0],device.beacons[1],device.beacons[2])]
+		}
+		return({
+			...device,
+			positions:positions
+		})
+	})
+
+	//console.log(JSON.stringify(devices.filter(dev=>dev.positions.length),null,2))
+
+},100);
 
 
 //Add interval to keep calculating devices' positions

@@ -40,8 +40,8 @@ const deviceStyle =()=> ({
 
 const containerStyle =(x,y)=> ({
     position:"absolute",
-    top:x+"%",
-    left:y+"%",
+    left:x,
+    top:y,
     display: "flex",
     flexDirection: "column",
     alignItems: "center"
@@ -75,20 +75,24 @@ export function Main (){
     const [devices,setDevices] = useState([]);
 
     useEffect(()=>{
-        setBeacons(getBeacons());
-        setDevices(getDevices);
         const interval = setInterval(() => {
-            setDevices(getDevices);
-            console.log('This will run every 1 second!')
-        }, 1000);
+            getBeacons().then(res=>{setBeacons(res)})
+            getDevices().then(res=>{setDevices(res)})
+        }, 100);
         return () => clearInterval(interval);
     },[])
 
+    useEffect(()=>{
+        console.log(beacons)
+        console.log(devices)
+    },[devices,beacons])
+
     return (
-        <Box className={"bg"}>
-            {beacons.map(beacon=>(drawBeacon(beacon.x/scaleFactor,beacon.y/scaleFactor,beacon.name)))}
+        <Box /*className={"bg"}*/>
+            <img src="./plan.png" alt="plan" width="2200" height="1100"/>
+            {beacons.map(beacon=>(drawBeacon(beacon.x,beacon.y,beacon.addr)))}
             {devices.map(device=> (
-                device.positions.map(pos=> drawDevice(pos.x / scaleFactor, pos.y / scaleFactor, device.mac,device.positions.length))
+                device.positions.map(pos=> drawDevice(pos.x , pos.y, device.addr,device.positions.length))
             ))}
         </Box>
     );
