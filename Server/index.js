@@ -111,6 +111,7 @@ app.get('/getDevices',(req,res)=>{
 })
 
 
+
 app.post('/handleDiscovery/',(req,res)=>{
 	const body = req.body;
 
@@ -146,7 +147,6 @@ app.post('/handleDiscovery/',(req,res)=>{
 setInterval(()=>{
 
 }, 250);
-
 
 //Add interval to keep calculating devices' positions
 
