@@ -5,6 +5,8 @@ from pprint import pprint
 
 SERVER_URL = "http://192.168.43.73:8080/handleDiscovery/"
 PI_MAC = "dca6324dc474"
+PI_X = 400
+PI_Y = 600
 
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
@@ -20,7 +22,9 @@ class ScanDelegate(DefaultDelegate):
             "addrType":dev.addrType,
             "rssi":dev.rssi,
             "beacon":{
-                "addr":PI_MAC
+                "addr":PI_MAC,
+                "x":PI_X,
+                "y":PI_Y
             },
             "scanData":scanData
         }
