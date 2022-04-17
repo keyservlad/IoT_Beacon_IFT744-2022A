@@ -43,4 +43,3 @@ while(True):
 #    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
 #    for (adtype, desc, value) in dev.getScanData():
 #        print("  %s = %s" % (desc, value))
-
