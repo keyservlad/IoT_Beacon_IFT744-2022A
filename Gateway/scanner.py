@@ -38,15 +38,17 @@ class ScanDelegate(DefaultDelegate):
                     }
                 self.addr_list[dev.addr].pop(0)
                 print(obj)
-                requests.post(SERVER_URL, json = obj)
+                try:
+                    requests.post(SERVER_URL, json = obj)
+                except:
+                    print("Error Connecting!!")
 
 scanner = Scanner().withDelegate(ScanDelegate())
 while(True):
     try:
         devices = scanner.scan(10.0)    
     except:
-        pass
-        time.sleep()
+        time.sleep(2)
 
 
 
