@@ -11,30 +11,42 @@ PI_Y = 600
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
+        self.addr_list = {}
 
     def handleDiscovery(self, dev, isNewDev, isNewData):
 
         scanData = {}
         for (addtype, desc, value) in dev.getScanData():
             scanData[desc]=value
-        obj = {
-            "addr":dev.addr,
-            "addrType":dev.addrType,
-            "rssi":dev.rssi,
-            "beacon":{
-                "addr":PI_MAC,
-                "x":PI_X,
-                "y":PI_Y
-            },
-            "scanData":scanData
-        }
-
-        print(obj)
-        requests.post(SERVER_URL, json = obj)
+        
+        if dev.addr not in self.addr_list:            
+            self.addr_list[dev.addr] = [dev.rssi]
+        else:
+            self.addr_list[dev.addr].append(dev.rssi)
+            if(len(self.addr_list[dev.addr])==5):
+                avg_rssi = sum(self.addr_list[dev.addr])/5
+                obj = {
+                        "addr":dev.addr,
+                        "addrType":dev.addrType,
+                        "rssi":avg_rssi,
+                        "beacon":{
+                            "addr":PI_MAC,
+                            "x":PI_X,
+                            "y":PI_Y
+                        },
+                        "scanData":scanData
+                    }
+                self.addr_list[dev.addr].pop(0)
+                print(obj)
+                requests.post(SERVER_URL, json = obj)
 
 scanner = Scanner().withDelegate(ScanDelegate())
 while(True):
-    devices = scanner.scan(10.0)    
+    try:
+        devices = scanner.scan(10.0)    
+    except:
+        pass
+        time.sleep()
 
 
 
