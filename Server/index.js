@@ -5,11 +5,14 @@ const PORT = 8080;
 app.use(express.json())
 app.use(cors())
 
+
+const MAX_DELAY = 1000;
+
 const MEASURED_POWER = -55;
 
 const beacons = []
 
-let devices = []            
+let devices = [] 
 
 const mapDistance = (rssi,measuredPower,n) => {
 	//Multiply by 100 to get distance in cm	
@@ -174,6 +177,7 @@ setInterval(()=>{
 	devices = devices.map(device=>{
 
 		//Sort By distance
+		device.beacons = device.beacons.filter(beacon=>Date.now()-beacon.time<MAX_DELAY)
 		device.beacons.sort((a,b)=>a.d-b.d);
 
 		let positions = []
